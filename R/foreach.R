@@ -36,7 +36,8 @@ foreach <- function(..., .combine, .init, .final=NULL, .inorder=TRUE,
                     .multicombine=FALSE,
                     .maxcombine=if (.multicombine) 100 else 2,
                     .errorhandling=c('stop', 'remove', 'pass'),
-                    .packages=NULL, .export=NULL, .noexport=NULL,
+                    .packages=NULL, .namespaces=NULL,
+                    .export=NULL, .noexport=NULL,
                     .verbose=FALSE) {
   if (missing(.combine)) {
     if (!missing(.init))
@@ -77,6 +78,8 @@ foreach <- function(..., .combine, .init, .final=NULL, .inorder=TRUE,
     stop('.errorhandling must be a character string')
   if (!is.null(.packages) && !is.character(.packages))
     stop('.packages must be a character vector')
+  if (!is.null(.namespaces) && !is.character(.namespaces))
+    stop('.namespaces must be a character vector')
   if (!is.null(.export) && !is.character(.export))
     stop('.export must be a character vector')
   if (!is.null(.noexport) && !is.character(.noexport))
@@ -134,6 +137,7 @@ foreach <- function(..., .combine, .init, .final=NULL, .inorder=TRUE,
   iterable <- list(args=args, argnames=argnames, evalenv=parent.frame(),
                    specified=specified, combineInfo=combineInfo,
                    errorHandling=.errorhandling, packages=.packages,
+                   namespaces=.namespaces,
                    export=.export, noexport=.noexport, options=options,
                    verbose=.verbose)
   class(iterable) <- 'foreach'
@@ -438,11 +442,12 @@ makeMerged <- function(e1, e2) {
   specified <- union(e1$specified, e2$specified)
   argnames <- union(e1$argnames, e2$argnames)
   packages <- union(e1$packages, e2$packages)
+  namespaces <- union(e1$namespaces, e2$namespaces)
   export <- union(e1$export, e2$export)
   noexport <- union(e1$noexport, e2$noexport)
   options <- c(e1$options, e2$options)
   iterable <- list(e1=e1, e2=e2, specified=specified, argnames=argnames,
-                   packages=packages, export=export, noexport=noexport,
+                   packages=packages, namespaces=namespaces, export=export, noexport=noexport,
                    options=options)
 
   # this gives precedence to the outer foreach
@@ -592,7 +597,7 @@ when <- function(cond) {
 
 makeFiltered <- function(e1, cond) {
   iterable <- c(list(e1=e1), cond)
-  inherit <- c('argnames', 'specified', 'errorHandling', 'packages',
+  inherit <- c('argnames', 'specified', 'errorHandling', 'packages', 'namespaces',
                'export', 'noexport', 'options', 'verbose')
   iterable[inherit] <- e1[inherit]
   class(iterable) <- c('filteredforeach', 'foreach')
